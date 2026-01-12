@@ -56,7 +56,8 @@ docker-compose run --rm app python your_script.py
    ```
 
 2. Отредактируйте `.env` и укажите свои значения:
-   - `AUTH_KEY` - секретный ключ для аутентификации
+   - `GIGACHAT_AUTH_KEY` - секретный ключ для аутентификации GigaChat
+   - `APP_API_KEY` - секретный ключ для авторизации API endpoints
 
 **Важно:** Файл `.env` находится в `.gitignore` и не коммитится в репозиторий.
 

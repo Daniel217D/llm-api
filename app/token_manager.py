@@ -6,7 +6,7 @@ from gigachat import GigaChat
 from app.redis_client import get_from_redis, set_to_redis
 
 # Get authorization key from environment
-auth_key: str = os.getenv('AUTH_KEY', '')
+auth_key: str = os.getenv('GIGACHAT_AUTH_KEY', '')
 
 def get_or_refresh_token() -> str:
 	"""
@@ -32,7 +32,7 @@ def get_or_refresh_token() -> str:
 	# Token expired or not found, get new one
 	try:
 		if not auth_key:
-			raise ValueError("AUTH_KEY is not set in environment variables")
+			raise ValueError("GIGACHAT_AUTH_KEY is not set in environment variables")
 		
 		giga = GigaChat(credentials=auth_key, verify_ssl_certs=False)
 		token_response = giga.get_token()
