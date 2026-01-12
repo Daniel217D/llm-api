@@ -1,0 +1,68 @@
+---
+name: Python API Development Rules
+description: Coding standards and best practices for Python API project
+---
+
+# Python API Development Rules
+
+## Code Style
+
+1. **Comments in English**: All code comments, docstrings, and documentation must be written in English.
+
+2. **Type Hints**: Always use type hints for function parameters and return values. Use `typing` module for complex types.
+
+   ```python
+   from typing import Optional, Dict, List
+   
+   def get_user(user_id: int) -> Optional[Dict[str, str]]:
+       """Get user by ID."""
+       pass
+   ```
+
+3. **Function Documentation**: Use docstrings for complex functions, classes, and modules following Google or NumPy style. Simple functions (1-2 lines without complex logic) don't require docstrings if their purpose is clear from the name and implementation.
+
+   ```python
+   # Simple function - no docstring needed
+   def get_user_id(user_id: int) -> int:
+       return user_id
+   
+   # Complex function - docstring required
+   def process_data(data: List[str]) -> Dict[str, int]:
+       """
+       Process list of strings and return statistics.
+       
+       Args:
+           data: List of strings to process
+       
+       Returns:
+           Dictionary with processing statistics
+       """
+       pass
+   ```
+
+## Code Quality
+
+4. **Error Handling**: Always handle exceptions explicitly. Use specific exception types when possible.
+
+5. **Environment Variables**: Use `.env` file for configuration. Always provide default values when reading environment variables.
+
+6. **Imports**: Organize imports in the following order:
+   - Standard library imports
+   - Third-party imports
+   - Local application imports
+   
+   Separate each group with a blank line.
+
+7. **Naming Conventions**:
+   - Functions and variables: `snake_case`
+   - Classes: `PascalCase`
+   - Constants: `UPPER_SNAKE_CASE`
+   - Private methods/variables: prefix with `_`
+
+## Project Structure
+
+8. **Docker**: Keep Docker configuration up to date. Ensure `requirements.txt` is always synchronized with actual dependencies.
+
+9. **Dependencies**: Pin dependency versions in `requirements.txt` for reproducibility.
+
+10. **Code Formatting**: Follow PEP 8 style guide. Consider using `black` for code formatting and `flake8` for linting.
