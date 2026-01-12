@@ -21,11 +21,12 @@ def get_or_refresh_token() -> str:
 	# Try to get token from Redis
 	access_token = get_from_redis(token_key)
 	expires_at_str = get_from_redis(expires_at_key)
+
 	
 	# Check if token exists and is not expired
 	if access_token and expires_at_str:
 		expires_at = int(expires_at_str)
-		if time.time() < expires_at:
+		if time.time() * 1000 < expires_at:
 			return access_token
 	
 	# Token expired or not found, get new one
