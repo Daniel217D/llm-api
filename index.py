@@ -46,20 +46,20 @@ async def _(
 @app.post(
     "/gigachat/chat",
     summary="Send a message to GigaChat",
-    description="Accepts a `payload` in body and sends it to GigaChat"
+    description="Accepts a message in body and sends it to GigaChat"
 )
 async def _(
     payload: Optional[str] = Body(
         default=None,
         description="Text message to send to GigaChat",
-        media_type="application/json",
+        media_type="text/plain",
     ),
     _: None = Depends(verify_token),
 ) -> Any:
     if not payload:
         raise HTTPException(
             status_code=422,
-            detail="The 'payload' query parameter is required"
+            detail="The body is required"
         )
 
     return chat(payload)
