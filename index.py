@@ -1,14 +1,12 @@
-from typing import Any, Optional
 from dotenv import load_dotenv
-
-from app.service import chat
-
 load_dotenv()
 
+from typing import Any, Optional
 from fastapi import FastAPI, Query, HTTPException, Depends, Body
 
 from app.auth import verify_token
 from app.config import validate_environment_variables
+from app.service import chat
 
 validate_environment_variables()
 
