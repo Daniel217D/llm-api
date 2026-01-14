@@ -7,11 +7,53 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import verify_token
 from app.config import validate_environment_variables
-from app.service import chat
+from app.service import chat, GigaChatModel
 
 validate_environment_variables()
 
 app = FastAPI()
+
+
+def validate_model(model: Optional[str] = Query(default=None)) -> GigaChatModel:
+    if not model:
+        return GigaChatModel.GIGACHAT
+    
+    try:
+        return GigaChatModel(model)
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid model '{model}'. Available models: {', '.join([m.value for m in GigaChatModel])}"
+        )
+
+
+def validate_payload_from_query(
+    payload: Optional[str] = Query(
+        default=None,
+        description="Text message to send to GigaChat"
+    )
+) -> str:
+    if not payload:
+        raise HTTPException(
+            status_code=422,
+            detail="The 'payload' query parameter is required"
+        )
+    return payload
+
+
+def validate_payload_from_body(
+    payload: Optional[str] = Body(
+        default=None,
+        description="Text message to send to GigaChat",
+        media_type="text/plain",
+    )
+) -> str:
+    if not payload:
+        raise HTTPException(
+            status_code=422,
+            detail="The body is required"
+        )
+    return payload
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,19 +80,11 @@ async def root() -> dict[str, str]:
     description="Accepts a `payload` query parameter and sends it to GigaChat"
 )
 async def _(
-    payload: Optional[str] = Query(
-        default=None,
-        description="Text message to send to GigaChat"
-    ),
+    payload: str = Depends(validate_payload_from_query),
+    selected_model: GigaChatModel = Depends(validate_model),
     _: None = Depends(verify_token),
 ) -> Any:
-    if not payload:
-        raise HTTPException(
-            status_code=422,
-            detail="The 'payload' query parameter is required"
-        )
-
-    return chat(payload)
+    return chat(payload, selected_model)
 
 @app.post(
     "/gigachat/chat",
@@ -58,17 +92,8 @@ async def _(
     description="Accepts a message in body and sends it to GigaChat"
 )
 async def _(
-    payload: Optional[str] = Body(
-        default=None,
-        description="Text message to send to GigaChat",
-        media_type="text/plain",
-    ),
+    payload: str = Depends(validate_payload_from_body),
+    selected_model: GigaChatModel = Depends(validate_model),
     _: None = Depends(verify_token),
 ) -> Any:
-    if not payload:
-        raise HTTPException(
-            status_code=422,
-            detail="The body is required"
-        )
-
-    return chat(payload)
+    return chat(payload, selected_model)
