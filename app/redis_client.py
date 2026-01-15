@@ -11,28 +11,28 @@ redis_port: int = int(os.getenv('REDIS_PORT', '6379'))
 redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
 
 
-def get_from_redis(key: str) -> Optional[str]:
+def get_from_redis(key: Any) -> Optional[str]:
 	"""
 	Get value from Redis by key.
 	
 	Args:
-		key: Redis key
+		key: Redis key (any JSON-serializable object or string)
 	
 	Returns:
 		Value from Redis or None if key doesn't exist
 	"""
 	try:
-		return redis_client.get(key)
+		return redis_client.get(get_cache_key(key))
 	except redis.RedisError:
 		return None
 
 
-def set_to_redis(key: str, value: str, expire: Optional[int] = None) -> bool:
+def set_to_redis(key: Any, value: str, expire: Optional[int] = None) -> bool:
 	"""
 	Set value to Redis with optional expiration.
 	
 	Args:
-		key: Redis key
+		key: Redis key (any JSON-serializable object or string)
 		value: Value to store
 		expire: Optional expiration time in seconds
 	
@@ -40,13 +40,29 @@ def set_to_redis(key: str, value: str, expire: Optional[int] = None) -> bool:
 		True if successful, False otherwise
 	"""
 	try:
+		cache_key = get_cache_key(key)
 		if expire:
-			redis_client.setex(key, expire, value)
+			redis_client.setex(cache_key, expire, value)
 		else:
-			redis_client.set(key, value)
+			redis_client.set(cache_key, value)
 		return True
 	except redis.RedisError:
 		return False
+
+
+def get_cache_key(key: Any) -> str:
+	"""
+	Generate cache key from any JSON-serializable object.
+	
+	Args:
+		key: Cache key (any JSON-serializable object)
+	
+	Returns:
+		Cache key string
+	"""
+	key_json = json.dumps(key, sort_keys=True, ensure_ascii=False)
+	key_hash = hashlib.md5(key_json.encode('utf-8')).hexdigest()
+	return f"cache:{key_hash}"
 
 
 def remember(key: Any, callback: Callable[[], str], expire: int = 1800) -> str:
@@ -61,19 +77,14 @@ def remember(key: Any, callback: Callable[[], str], expire: int = 1800) -> str:
 	Returns:
 		Cached value or result from callback
 	"""
-	# Serialize key to JSON and create hash
-	key_json = json.dumps(key, sort_keys=True, ensure_ascii=False)
-	key_hash = hashlib.md5(key_json.encode('utf-8')).hexdigest()
-	cache_key = f"cache:{key_hash}"
-	
 	# Try to get from cache
-	cached_value = get_from_redis(cache_key)
+	cached_value = get_from_redis(key)
 	if cached_value is not None:
 		return cached_value
 	
 	# Cache miss - execute callback and cache result
 	value = callback()
-	set_to_redis(cache_key, value, expire=expire)
+	set_to_redis(key, value, expire=expire)
 	return value
 
 
