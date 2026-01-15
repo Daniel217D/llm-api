@@ -82,9 +82,10 @@ async def root() -> dict[str, str]:
 async def _(
     payload: str = Depends(validate_payload_from_query),
     selected_model: GigaChatModel = Depends(validate_model),
+    no_cache: Optional[int] = Query(default=None, description="Set to 1 to skip cache"),
     _: None = Depends(verify_token),
 ) -> Any:
-    return chat(payload, selected_model)
+    return chat(payload, selected_model, no_cache=(no_cache == 1))
 
 @app.post(
     "/gigachat/chat",
@@ -94,6 +95,7 @@ async def _(
 async def _(
     payload: str = Depends(validate_payload_from_body),
     selected_model: GigaChatModel = Depends(validate_model),
+    no_cache: Optional[int] = Query(default=None, description="Set to 1 to skip cache"),
     _: None = Depends(verify_token),
 ) -> Any:
-    return chat(payload, selected_model)
+    return chat(payload, selected_model, no_cache=(no_cache == 1))
