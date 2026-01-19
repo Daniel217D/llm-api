@@ -1,3 +1,5 @@
+import bootstrap
+
 from typing import Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query
