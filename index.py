@@ -1,10 +1,9 @@
-import bootstrap
-
 from typing import Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+import bootstrap  # noqa: F401
 from app.auth import verify_token
 from app.config import validate_environment_variables
 from app.service import GigaChatModel, chat
