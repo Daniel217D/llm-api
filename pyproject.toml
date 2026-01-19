@@ -1,0 +1,39 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+include = ["index.py", "app/**/*.py"]
+exclude = [
+  ".venv",
+  "__pycache__",
+  "migrations",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+  "Depends",
+  "fastapi.Depends",
+  "fastapi.params.Depends",
+]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["index.py", "app"]
+
+warn_unused_configs = true
+
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+no_implicit_optional = true
+warn_return_any = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+
+ignore_missing_imports = true

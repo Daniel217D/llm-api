@@ -9,7 +9,8 @@ RUN (sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.
  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -r requirements-dev.txt
 
 COPY . .
 CMD ["python", "index.py"]
