@@ -1,59 +1,53 @@
-from dotenv import load_dotenv
-load_dotenv()
+from typing import Any
 
-from typing import Any, Optional
-from fastapi import FastAPI, Query, HTTPException, Depends, Body
+from fastapi import Body, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import verify_token
 from app.config import validate_environment_variables
-from app.service import chat, GigaChatModel
+from app.service import GigaChatModel, chat
 
 validate_environment_variables()
 
 app = FastAPI()
 
 
-def validate_model(model: Optional[str] = Query(default=None)) -> GigaChatModel:
+def validate_model(model: str | None = Query(default=None)) -> GigaChatModel:
     if not model:
         return GigaChatModel.GIGACHAT
-    
+
     try:
         return GigaChatModel(model)
     except ValueError:
         raise HTTPException(
             status_code=422,
-            detail=f"Invalid model '{model}'. Available models: {', '.join([m.value for m in GigaChatModel])}"
-        )
+            detail=f"Invalid model '{model}'. Available models: {', '.join([m.value for m in GigaChatModel])}",
+        ) from None
 
 
 def validate_payload_from_query(
-    payload: Optional[str] = Query(
-        default=None,
-        description="Text message to send to GigaChat"
-    )
+    payload: str | None = Query(
+        default=None, description="Text message to send to GigaChat"
+    ),
 ) -> str:
     if not payload:
         raise HTTPException(
-            status_code=422,
-            detail="The 'payload' query parameter is required"
-        )
+            status_code=422, detail="The 'payload' query parameter is required"
+        ) from None
     return payload
 
 
 def validate_payload_from_body(
-    payload: Optional[str] = Body(
+    payload: str | None = Body(
         default=None,
         description="Text message to send to GigaChat",
         media_type="text/plain",
-    )
+    ),
 ) -> str:
     if not payload:
-        raise HTTPException(
-            status_code=422,
-            detail="The body is required"
-        )
+        raise HTTPException(status_code=422, detail="The body is required") from None
     return payload
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -63,41 +57,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get(
-    "/",
-    summary="Nothing here",
-    description="Temporary stub"
-)
+
+@app.get("/", summary="Nothing here", description="Temporary stub")
 async def root() -> dict[str, str]:
-    return {
-        "status": "ok",
-        "message": "Home endpoint stub"
-    }
+    return {"status": "ok", "message": "Home endpoint stub"}
+
 
 @app.get(
     "/gigachat/chat",
     summary="Send a message to GigaChat",
-    description="Accepts a `payload` query parameter and sends it to GigaChat"
+    description="Accepts a `payload` query parameter and sends it to GigaChat",
 )
 async def _(
     payload: str = Depends(validate_payload_from_query),
     model: GigaChatModel = Depends(validate_model),
-    no_cache: Optional[int] = Query(default=None, description="Set to 1 to skip cache"),
-    reset_cache: Optional[int] = Query(default=None, description="Set to 1 to reset cache"),
+    no_cache: int | None = Query(default=None, description="Set to 1 to skip cache"),
+    reset_cache: int | None = Query(
+        default=None, description="Set to 1 to reset cache"
+    ),
     _: None = Depends(verify_token),
 ) -> Any:
-    return chat(payload, model, no_cache=(no_cache == 1), reset_cache=(reset_cache == 1))
+    return chat(
+        payload, model, no_cache=(no_cache == 1), reset_cache=(reset_cache == 1)
+    )
+
 
 @app.post(
     "/gigachat/chat",
     summary="Send a message to GigaChat",
-    description="Accepts a message in body and sends it to GigaChat"
+    description="Accepts a message in body and sends it to GigaChat",
 )
 async def _(
     payload: str = Depends(validate_payload_from_body),
     model: GigaChatModel = Depends(validate_model),
-    no_cache: Optional[int] = Query(default=None, description="Set to 1 to skip cache"),
-    reset_cache: Optional[int] = Query(default=None, description="Set to 1 to reset cache"),
+    no_cache: int | None = Query(default=None, description="Set to 1 to skip cache"),
+    reset_cache: int | None = Query(
+        default=None, description="Set to 1 to reset cache"
+    ),
     _: None = Depends(verify_token),
 ) -> Any:
-    return chat(payload, model, no_cache=(no_cache == 1), reset_cache=(reset_cache == 1))
+    return chat(
+        payload, model, no_cache=(no_cache == 1), reset_cache=(reset_cache == 1)
+    )

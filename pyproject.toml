@@ -1,0 +1,21 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+include = ["index.py", "app/**/*.py"]
+exclude = [
+  ".venv",
+  "__pycache__",
+  "migrations",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+  "Depends",
+  "fastapi.Depends",
+  "fastapi.params.Depends",
+]
