@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 import redis
 
@@ -23,7 +23,10 @@ def get_from_redis(key: Any) -> str | None:
             Value from Redis or None if key doesn't exist
     """
     try:
-        return redis_client.get(get_cache_key(key))
+        return cast(
+            str | None,
+            redis_client.get(get_cache_key(key)),
+        )
     except redis.RedisError:
         return None
 
@@ -89,7 +92,7 @@ def remember(key: Any, callback: Callable[[], str], expire: int = 1800) -> str:
     return value
 
 
-def service_id(fn) -> str:
+def service_id(fn: Callable[..., Any]) -> str:
     """
     Get a unique identifier for a function.
 
